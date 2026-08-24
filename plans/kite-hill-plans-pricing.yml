@@ -1,0 +1,42 @@
+generated: '2026-08-23'
+method: searched
+source: https://kite-hill.com/
+description: >-
+  Kite Hill sells food, not API access. There is no developer plan, no API pricing page and no
+  paid or metered agent tier — the MCP, UCP and GraphQL surfaces are open and free. This file
+  records that absence deliberately rather than omitting it.
+plan_count: 0
+plans: []
+api_pricing:
+  published: false
+  metered_agent_access: false
+  note: >-
+    /llms.txt and /robots.txt invite agents onto the UCP/MCP endpoints with no fee, key or
+    quota. The only commercial gate on the surface is that a human must approve payment.
+product_pricing:
+  surface: storefront catalog
+  finding: >-
+    Every product on the storefront is published at $0.00. All 30 products in /products.json
+    carry price "0.00" with available true, the GraphQL priceRange returns 0.0 USD, and the
+    live MCP search_catalog call returned price_range.min/max amount 0 for every product. The
+    store is operating as a brand catalog and store-locator surface rather than a transacting
+    shop, even though the full agentic-commerce stack (cart, checkout, payment handlers) is
+    declared and reachable.
+  checked: '2026-08-23'
+  implication: >-
+    An agent that trusts the declared checkout capability would be quoting a buyer $0.00. This
+    is the single most consequential fact on Kite Hill's agent surface and it is discoverable
+    only by calling it.
+retail: >-
+  Kite Hill products are sold through grocery retailers (Whole Foods, Target, Sprouts, Publix
+  and others per the company FAQ); the store locator at /pages/store-locator is the
+  provider's own pointer to where a purchase actually happens.
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/products.json
+  http_status: 200
+  note: 30 products, 30 available, 0 priced above zero
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/mcp
+  http_status: 200
+  note: 'tools/call search_catalog "yogurt" returned 10 products, every price_range 0 USD'

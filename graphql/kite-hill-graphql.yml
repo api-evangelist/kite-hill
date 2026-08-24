@@ -1,0 +1,70 @@
+generated: '2026-08-23'
+method: probed
+source: https://kite-hill.com/api/2026-04/graphql.json
+description: >-
+  Kite Hill's storefront runs on Shopify, and the Shopify Storefront GraphQL API is served
+  from Kite Hill's own host at https://kite-hill.com/api/{version}/graphql.json.
+  Introspection is ANONYMOUS on this host — the full schema was retrieved without an
+  X-Shopify-Storefront-Access-Token on 2026-08-23 and the SDL saved here is rendered
+  verbatim from that introspection response. The schema is Shopify's; the endpoint,
+  catalog and shop data behind it are Kite Hill's (shop.name = "Kite Hill Store",
+  primaryDomain.url = https://kite-hill.com).
+endpoint: https://kite-hill.com/api/2026-04/graphql.json
+endpoint_template: https://kite-hill.com/api/{version}/graphql.json
+introspection:
+  gated: false
+  verified: '2026-08-23'
+  http_status: 200
+  content_type: application/json
+  versions_verified: ['2026-04', '2026-01', '2025-07', '2025-01', 'unstable']
+schema:
+  file: kite-hill-storefront.graphql
+  format: SDL
+  derived_from: GraphQL introspection response (__schema)
+  query_type: QueryRoot
+  mutation_type: Mutation
+  subscription_type: null
+  types_total: 416
+  types_by_kind:
+    object: 262
+    input_object: 53
+    enum: 62
+    union: 16
+    interface: 10
+    scalar: 13
+  query_fields: 34
+  mutation_fields: 41
+  connection_types: 28
+  deprecated_fields: 53
+  note: >-
+    Counts exclude GraphQL introspection meta types (__Schema, __Type and friends) and the
+    five built-in scalars are counted but not re-declared in the SDL.
+cost_model:
+  mechanism: >-
+    Every response carries extensions.cost.requestedQueryCost. The API is query-cost
+    limited rather than request-count limited, and no rate-limit headers were observed.
+  observed_examples:
+  - query: '{shop{name}}'
+    requestedQueryCost: 1
+  - query: '{__schema{queryType{name}}}'
+    requestedQueryCost: 3
+  docs: https://shopify.dev/docs/api/usage/limits
+shop_facts:
+  source: 'live query: {shop{name description primaryDomain{url} shipsToCountries paymentSettings{currencyCode}}}'
+  fetched: '2026-08-23'
+  name: Kite Hill Store
+  description: The food you crave, without compromise.
+  primary_domain: https://kite-hill.com
+  currency: USD
+  ships_to_countries_count: 28
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/2026-04/graphql.json
+  method: POST full introspection
+  http_status: 200
+  result: 416 types rendered to SDL
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/2026-04/graphql.json
+  method: 'POST {shop{name}}'
+  http_status: 200
+  result: 'shop.name = "Kite Hill Store" — ownership confirmation for this endpoint'

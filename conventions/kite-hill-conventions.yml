@@ -1,0 +1,175 @@
+generated: '2026-08-23'
+method: derived
+source: >-
+  graphql/kite-hill-storefront.graphql + mcp/kite-hill-ucp-mcp-tools.json +
+  mcp/kite-hill-storefront-mcp-tools.json + llms/kite-hill-agents.md +
+  well-known/kite-hill-robots.txt
+docs: https://shopify.dev/docs/api/storefront
+description: >-
+  Cross-cutting request/response semantics for the surfaces Kite Hill actually serves.
+  Derived from the anonymously introspected GraphQL SDL, two live MCP tools/list responses,
+  the discovery documents, and the provider's own published agent instructions.
+authentication:
+  style: >-
+    none for storefront GraphQL and both MCP servers; a UCP agent profile URI for UCP tool
+    invocation; OIDC / OAuth 2.0 authorization code + PKCE for customer accounts
+  detail: authentication/kite-hill-authentication.yml
+idempotency:
+  supported: partial
+  mechanism: meta["idempotency-key"] on the UCP MCP complete_checkout tool
+  applies_to: >-
+    complete_checkout ONLY. It is a required property of meta on that one tool and on no
+    other of the thirteen — "An idempotency key for completing the checkout." The other
+    twelve UCP tools and all five Storefront MCP tools offer no idempotency key, so a
+    retried update_cart adds the items again.
+  graphql: >-
+    The Storefront GraphQL API exposes an idempotencyKey argument on exactly one mutation,
+    shopPayPaymentRequestSessionSubmit(token, paymentRequest, idempotencyKey!, orderName),
+    and the schema carries an IDEMPOTENCY_KEY_ALREADY_USED error code. The cart mutations
+    and cartSubmitForCompletion have no idempotency key.
+  key_format: not specified by the provider; an opaque client-generated string
+  retention: not published
+  conflict_behavior: >-
+    Not documented for the UCP tool. On the GraphQL Shop Pay path, reuse of a key surfaces
+    IDEMPOTENCY_KEY_ALREADY_USED.
+  note: >-
+    The money-moving call is the one that is protected, which is the right place for it, but
+    an agent cannot safely retry any cart or checkout mutation short of completion.
+  sources: [mcp/kite-hill-ucp-mcp-tools.json, graphql/kite-hill-storefront.graphql]
+reversibility:
+  grade: documented
+  applies_to: write surface (UCP MCP cart + checkout tools)
+  operations:
+  - action: create_cart / update_cart
+    reversal: cancel_cart
+    operation_id: cancel_cart
+    window: >-
+      NOT STATED. Kite Hill publishes no expiry or cancellation window for a cart, and the
+      tool description is a single sentence ("Cancels a cart.").
+    source: mcp/kite-hill-ucp-mcp-tools.json
+  - action: create_checkout / update_checkout
+    reversal: cancel_checkout
+    operation_id: cancel_checkout
+    window: >-
+      NOT STATED. Available before completion; no time limit or state precondition is
+      published. There is no reversal for a COMPLETED checkout on any machine surface.
+    source: mcp/kite-hill-ucp-mcp-tools.json
+  - action: complete_checkout
+    reversal: none published
+    operation_id: null
+    window: >-
+      NONE. No refund, void, cancel-order or return tool exists on either MCP server, and
+      the anonymous Storefront GraphQL has no order-mutation surface. Once complete_checkout
+      succeeds an agent cannot undo it through any published API; reversal is a human
+      customer-service path via contactus@kite-hill.com.
+    source: mcp/kite-hill-mcp.yml
+  grade_rationale: >-
+    Reversal paths EXIST and are named (cancel_cart, cancel_checkout) but no window is
+    stated anywhere in the tool schemas, /agents.md, /llms.txt or the storefront policies —
+    documented (0.4), not verified. Kite Hill also publishes no refund or return policy page:
+    /policies/refund-policy and /policies/terms-of-service both 404.
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview, simulate or dry_run parameter on any of the eighteen tools. create_checkout
+    returning recalculated totals before complete_checkout is the closest thing to a
+    rehearsal step.
+pagination:
+  style: relay-cursor
+  applies_to: GraphQL connections (28 *Connection types in the SDL)
+  request_params: [first, last, after, before, reverse, sortKey]
+  response_fields:
+  - edges
+  - edges.node
+  - edges.cursor
+  - nodes
+  - pageInfo.hasNextPage
+  - pageInfo.hasPreviousPage
+  - pageInfo.startCursor
+  - pageInfo.endCursor
+  mcp: >-
+    search_catalog returns paginated results with a deliberately small first page; the tool
+    documents pagination.cursor for fetching further pages.
+field_selection:
+  style: graphql-selection-set
+  note: GraphQL selection sets replace sparse-fieldset and expansion parameters entirely.
+  mcp: >-
+    The MCP tools return fixed response shapes; get_product_details supports options for
+    variant narrowing, which is option resolution rather than field selection.
+identifiers:
+  format: 'gid://shopify/{Type}/{id}'
+  examples_from_tool_docs:
+  - 'gid://shopify/Checkout/abc123'
+  - 'gid://shopify/Product/...'
+  - 'gid://shopify/ProductVariant/...'
+  handles: >-
+    Product, Collection, Page, Blog, Article and Metaobject also carry a human-readable
+    handle used in storefront URLs and in the *ByHandle queries.
+  detail: data-model/kite-hill-data-model.yml
+money:
+  representation: >-
+    UCP MCP tools return integers in the currency's ISO 4217 MINOR units paired with a
+    currency code — {"amount": 600, "currency": "USD"} is $6.00. Every checkout and cart
+    tool description repeats this and warns to convert before quoting a price to a buyer.
+  graphql: >-
+    The GraphQL API uses the Decimal-typed MoneyV2 { amount, currencyCode } instead, so the
+    two surfaces represent the same price differently.
+  currency: USD
+metadata:
+  style: metafields and metaobjects
+  fields: [metafield, metafields, metaobject, metaobjects]
+  mutations: [cartMetafieldsSet, cartMetafieldDelete]
+localization:
+  mechanism: '@inContext directive'
+  params: [country, language, buyerIdentity, preferredLocationId]
+  mcp_equivalent: >-
+    get_product_details takes country and language; /llms.txt asks agents to pass
+    context.address_country and context.currency for accurate pricing and availability.
+  reality: >-
+    Store currency is USD and shipsToCountries lists 28 countries, so the localization
+    parameters are live rather than inert.
+agent_identity:
+  mechanism: 'meta["ucp-agent"]["profile"] — a resolvable agent profile URI'
+  required_on: all 13 UCP MCP tools
+  enforced_on: tool invocation, resources/list, prompts/list
+  note: >-
+    The closest thing to a request-tracing convention on this API. There is no request-id
+    header, no correlation id and no trace context on any surface.
+request_tracing:
+  supported: false
+  note: No request-id, correlation-id or trace header observed on any surface.
+versioning:
+  scheme: calendar-quarter path segment for GraphQL; dated protocol versions for UCP
+  graphql_pattern: /api/{YYYY-MM}/graphql.json
+  graphql_current: '2026-07'
+  ucp_supported: ['2026-04-08', '2026-01-23']
+  detail: lifecycle/kite-hill-lifecycle.yml
+error_envelope:
+  graphql:
+    transport_status: 200 with an errors[] array
+    request_errors: [message, locations, path, extensions.code]
+    mutation_errors: 'typed *UserError lists implementing DisplayableError (field, message, code)'
+  mcp:
+    transport: JSON-RPC 2.0
+    shape: [error.code, error.message, error.data]
+    observed: >-
+      HTTP 422 with -32001 "UCP discovery failed", data.code invalid_profile_url, and a
+      data.continue_url pointing at the store.
+  detail: errors/kite-hill-problem-types.yml
+rate_limiting:
+  style: query-cost for GraphQL; per-IP for MCP
+  signal: extensions.cost.requestedQueryCost on every GraphQL response
+  headers: none observed
+  mcp: >-
+    /llms.txt states "The MCP endpoint is rate-limited per IP. Back off on 429 responses."
+    No numeric limit is published and no rate-limit headers were observed.
+  detail: rate-limits/kite-hill-rate-limits.yml
+  docs: https://shopify.dev/docs/api/usage/limits
+agent_policy:
+  source: https://kite-hill.com/robots.txt and https://kite-hill.com/agents.md
+  human_in_the_loop: >-
+    "Checkouts are for humans." Agents must not complete checkout, payment or order placement
+    automatically — no scripted form fills, browser automation, or end-to-end agent flows
+    that finalize payment without an explicit, contemporaneous human approval step.
+  disallowed_for_agents: [/cart.js, /recommendations/products]
+  preferred_surfaces: [UCP MCP, Storefront MCP, 'https://shop.app/SKILL.md']

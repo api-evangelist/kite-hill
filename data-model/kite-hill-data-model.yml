@@ -1,0 +1,161 @@
+generated: '2026-08-23'
+method: derived
+source: graphql/kite-hill-storefront.graphql
+description: >-
+  Entity-relationship graph derived from the GraphQL SDL anonymously introspected off Kite
+  Hill's own host, with entity values confirmed by live queries. Every entity and every
+  relationship below was read from a field declaration in the SDL — nothing is inferred
+  beyond the type system. Identifiers are Shopify global IDs unless noted.
+id_scheme:
+  format: 'gid://shopify/{Type}/{id}'
+  encoding: opaque ID scalar (globally unique, resolvable via the node/nodes queries)
+  observed_values: ['gid://shopify/Product/8740168532146', 'gid://shopify/ProductVariant/47084626149554', 'gid://shopify/Checkout/abc123']
+  handles: >-
+    Product, Collection, Page, Blog, Article and Metaobject also carry a human-readable handle
+    used in storefront URLs and in the *ByHandle queries.
+entities:
+- name: Shop
+  root: true
+  key_fields: [id, name, description, primaryDomain, paymentSettings, shipsToCountries, moneyFormat, brand]
+  policies: [privacyPolicy, refundPolicy, shippingPolicy, termsOfService, subscriptionPolicy]
+  observed_values:
+    name: Kite Hill Store
+    description: The food you crave, without compromise.
+    primaryDomain: https://kite-hill.com
+    currency: USD
+    shipsToCountries_count: 28
+    policies_populated: [privacyPolicy]
+    policies_null: [refundPolicy, shippingPolicy, termsOfService]
+- name: Product
+  key_fields: [id, handle, title, description, productType, vendor, tags, availableForSale, priceRange, totalInventory, publishedAt]
+  domain: catalog
+  observed: 30 products in /products.json; productType values include "Yogurt"; tags empty on sampled products
+- name: ProductVariant
+  key_fields: [id, sku, barcode, title, price, compareAtPrice, availableForSale, quantityAvailable, selectedOptions, weight, requiresShipping]
+  domain: catalog
+  observed: >-
+    Sampled variants carry title "Default Title", empty sku and price 0.00 USD — a
+    single-variant catalog with no priced merchandise.
+- name: ProductOption
+  key_fields: [id, name, optionValues]
+  domain: catalog
+- name: Collection
+  key_fields: [id, handle, title, description, image, updatedAt]
+  domain: catalog
+  known_handles: [original-yogurt, greek-yogurt, cream-cheese, sour-cream, dips, ricotta-alternative,
+    pasta, butter-alternative, soft-spreadable-cheese-alternatives, whole30, hero-products, frontpage]
+- name: Cart
+  key_fields: [id, checkoutUrl, totalQuantity, cost, note, attributes, createdAt, updatedAt]
+  domain: commerce
+- name: CartLine
+  key_fields: [id, quantity, cost, merchandise, discountAllocations]
+  domain: commerce
+- name: Checkout
+  key_fields: [id, line_items, totals, payment.instruments, buyer, fulfillment]
+  domain: commerce
+  source: mcp/kite-hill-ucp-mcp-tools.json
+  note: >-
+    UCP-only. There is no Checkout type in the anonymous Storefront GraphQL schema — Shopify
+    replaced it with the Cart API — so this entity exists on the MCP surface alone.
+- name: Order
+  key_fields: [id]
+  domain: commerce
+  source: mcp/kite-hill-ucp-mcp-tools.json
+  note: Readable through the UCP get_order tool; GraphQL order access requires a customerAccessToken.
+- name: Customer
+  key_fields: [id, email, firstName, lastName, phone, defaultAddress, addresses, orders]
+  domain: identity
+  access: customerAccessToken or the OIDC customer-accounts flow
+- name: MailingAddress
+  key_fields: [id, address1, address2, city, provinceCode, countryCodeV2, zip, phone]
+  domain: identity
+- name: Page
+  key_fields: [id, handle, title, body, seo]
+  domain: content
+  known_handles: [about-us, our-story, our-products, our-sourcing, contact, faq, press-awards,
+    store-locator, whole30, privacy-policy, data-sharing-opt-out, food-service]
+- name: Blog
+  key_fields: [id, handle, title, articles]
+  domain: content
+  known_handles: [recipes]
+- name: Article
+  key_fields: [id, handle, title, content, excerpt, image, publishedAt, blog]
+  domain: content
+- name: Metaobject
+  key_fields: [id, handle, type, fields]
+  domain: content
+- name: Menu
+  key_fields: [id, handle, title, items]
+  domain: navigation
+relationships:
+- from: Shop
+  to: Product
+  type: has_many
+  via: QueryRoot.products
+- from: Shop
+  to: Collection
+  type: has_many
+  via: QueryRoot.collections
+- from: Collection
+  to: Product
+  type: has_many
+  via: Collection.products
+- from: Product
+  to: ProductVariant
+  type: has_many
+  via: Product.variants
+- from: Product
+  to: ProductOption
+  type: has_many
+  via: Product.options
+- from: Product
+  to: Product
+  type: has_many
+  via: QueryRoot.productRecommendations(productId)
+- from: Cart
+  to: CartLine
+  type: has_many
+  via: Cart.lines
+- from: CartLine
+  to: ProductVariant
+  type: belongs_to
+  via: CartLine.merchandise (union Merchandise)
+- from: Cart
+  to: Customer
+  type: has_one
+  via: Cart.buyerIdentity.customer
+- from: Checkout
+  to: CartLine
+  type: has_many
+  via: checkout.line_items (UCP)
+- from: Checkout
+  to: Order
+  type: has_one
+  via: complete_checkout result (UCP)
+- from: Customer
+  to: MailingAddress
+  type: has_many
+  via: Customer.addresses
+- from: Customer
+  to: Order
+  type: has_many
+  via: Customer.orders
+- from: Blog
+  to: Article
+  type: has_many
+  via: Blog.articles
+- from: Menu
+  to: Menu
+  type: has_many
+  via: MenuItem.items (self-referencing navigation tree)
+divergence:
+  note: >-
+    The commerce core is one graph, but the two surfaces cut it differently. Checkout and
+    Order are reachable only through the UCP MCP tools; Article, Blog, Menu, Metaobject,
+    Collection enumeration and localization are reachable only through GraphQL. See
+    mcp/kite-hill-tool-crosswalk.yml.
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/2026-04/graphql.json
+  http_status: 200
+  note: introspection + live collections/products/pages/shop query

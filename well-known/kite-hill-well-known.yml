@@ -1,0 +1,106 @@
+generated: '2026-08-23'
+method: probed
+source: https://kite-hill.com/.well-known/
+hosts_probed:
+- https://kite-hill.com
+- https://www.kite-hill.com
+- https://kite-hill-store.myshopify.com
+host: https://kite-hill.com
+other_agent_discovery:
+- path: /llms.txt
+  status: 200
+  file: llms/kite-hill-llms.txt
+  note: >-
+    Real agent instructions, not a docs index — names the UCP discovery document, the
+    MCP endpoint, the typical agent flow, the supported UCP versions and the read-only
+    JSON browsing surface.
+- path: /agents.md
+  status: 200
+  file: llms/kite-hill-agents.md
+  note: >-
+    The canonical agent-facing description of the store. /llms.txt mirrors it; the two
+    documents differ on exactly one line — each names itself in the "Agent discovery" bullet.
+- path: /robots.txt
+  status: 200
+  file: kite-hill-robots.txt
+  note: >-
+    Carries agent policy in comments — points at /agents.md and the UCP/MCP endpoints, asks
+    personal-shopping agents to install https://shop.app/SKILL.md, and states "Checkouts are
+    for humans": no scripted form fills or end-to-end agent flows that finalize payment
+    without explicit contemporaneous human approval. Disallows /cart.js and
+    /recommendations/products specifically so agents use UCP/MCP instead.
+- path: /sitemap.xml
+  status: 200
+  note: >-
+    Sitemap index whose FIRST child is /sitemap_agentic_discovery.xml, a one-entry sitemap
+    listing https://kite-hill.com/agents.md with changefreq weekly — the agent document is
+    deliberately submitted for crawling.
+- path: /sitemap_agentic_discovery.xml
+  status: 200
+x-evidence:
+  fetched: '2026-08-23'
+  method: GET, anonymous, no credentials
+  note: >-
+    Every status above was observed directly with a browser User-Agent. www.kite-hill.com
+    301s to the apex; kite-hill-store.myshopify.com 301s to kite-hill.com for every path
+    probed, so the apex is the only serving host.
+hosts:
+- host: https://kite-hill.com
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    file: kite-hill-ucp.json
+    standard: Universal Commerce Protocol (ucp.dev) merchant profile
+    note: >-
+      Declares UCP versions 2026-04-08 and 2026-01-23, the dev.ucp.shopping MCP service
+      endpoint, the checkout / cart / fulfillment / discount / order / catalog.search /
+      catalog.lookup capabilities, the dev.shopify.catalog extension, and two payment
+      handlers (com.google.pay and dev.shopify.card). merchant_name is "Kite Hill Store" and
+      merchant_origin is kite-hill.com. The canonical host inside the document is
+      https://kite-hill-store.myshopify.com, which 301s back to the apex.
+  - path: /.well-known/ucp/2026-04-08
+    status: 200
+    note: The latest stable UCP version is individually addressable.
+  - path: /.well-known/ucp/2026-01-23
+    status: 200
+    note: The prior UCP version is still served.
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: kite-hill-openid-configuration.json
+    standard: OpenID Connect Discovery 1.0
+    note: >-
+      Shopify customer accounts; issuer https://shopify.com/authentication/68089118898.
+      Advertises openid, email, customer-account-api:full and customer-account-mcp-api:full.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: kite-hill-oauth-authorization-server.json
+    standard: RFC 8414 OAuth 2.0 Authorization Server Metadata
+    note: Byte-identical to the openid-configuration document.
+  - path: /.well-known/apple-app-site-association
+    status: 200
+    file: kite-hill-apple-app-site-association.json
+    standard: Apple Universal Links / associated domains
+    note: >-
+      Served, but empty — applinks.details is [] and webcredentials.apps is []. Recorded as
+      present-and-inert.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/llms.txt
+    status: 404
+    note: The real document is served at the root path /llms.txt.
+  - path: /.well-known/llms-full.txt
+    status: 404
+  - path: /.well-known/change-password
+    status: 404
+  - path: /.well-known/dnt-policy.txt
+    status: 404

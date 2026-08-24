@@ -1,0 +1,270 @@
+generated: '2026-08-23'
+method: derived
+source: mcp/kite-hill-mcp.yml + graphql/kite-hill-storefront.graphql
+description: >-
+  Kite Hill exposes no OpenAPI. Its three machine-readable surfaces are the Shopify
+  Storefront GraphQL API (anonymously introspectable at
+  https://kite-hill.com/api/2026-04/graphql.json), the Storefront MCP server at /api/mcp,
+  and the UCP commerce MCP server at /api/ucp/mcp. This crosswalk binds each verified MCP
+  tool to the GraphQL field(s) that back it, so a tool inherits a real input contract from
+  the SDL rather than a guessed one. Every GraphQL field named below was grepped out of
+  graphql/kite-hill-storefront.graphql; every MCP tool name came from a live tools/list.
+  Nothing here is invented.
+purpose: >-
+  Record where the three surfaces DIVERGE. They are overlapping projections of one commerce
+  core and none is a superset: the UCP server can complete a checkout and read an order,
+  which the anonymous Storefront GraphQL cannot; the GraphQL schema exposes editorial, menu,
+  metaobject, localization and customer-account surfaces that no tool reaches.
+surfaces:
+  openapi:
+    present: false
+    note: >-
+      No OpenAPI/Swagger found. /openapi.json and /swagger.json return 404 with an empty
+      body; /openapi.yaml and /api-docs return 404 with the storefront HTML shell. Probed
+      2026-08-23. The UCP MCP service does have a machine-readable contract, but it is the
+      PROTOCOL's, published by ucp.dev, not by Kite Hill — see ucp_openrpc below.
+  ucp_openrpc:
+    url: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+    published_by: ucp.dev (Universal Commerce Protocol), not Kite Hill
+    declared_in: well-known/kite-hill-ucp.json
+    note: >-
+      Recorded as the governing schema for the /api/ucp/mcp tools. Not harvested into
+      openapi/ because it is not this provider's document.
+  graphql:
+    endpoint: https://kite-hill.com/api/2026-04/graphql.json
+    endpoint_template: https://kite-hill.com/api/{version}/graphql.json
+    gated: false
+    introspection_verified: '2026-08-23'
+    file: graphql/kite-hill-storefront.graphql
+  mcp:
+  - endpoint: https://kite-hill.com/api/ucp/mcp
+    gated: false
+    tools_list_verified: '2026-08-23'
+    tool_count: 13
+    note: >-
+      tools/list is anonymous, but every tool requires meta["ucp-agent"].profile — a
+      resolvable agent profile URI — to be INVOKED, and complete_checkout additionally
+      requires meta["idempotency-key"]. resources/list and prompts/list return HTTP 422
+      with -32001 invalid_profile_url.
+  - endpoint: https://kite-hill.com/api/mcp
+    gated: false
+    tools_list_verified: '2026-08-23'
+    tool_count: 5
+  rest_json:
+    note: >-
+      /llms.txt publishes unauthenticated read-only JSON views (GET /products/{handle}.json,
+      GET /collections/{handle}/products.json) plus /collections/all and the sitemaps. These
+      are Shopify storefront JSON renderings, not a described API — no spec exists.
+      /robots.txt explicitly DISALLOWS /cart.js and /recommendations/products and tells
+      agents to use UCP/MCP instead.
+crosswalk:
+- tool: search_catalog
+  servers: [kite-hill-ucp-mcp, kite-hill-storefront-mcp]
+  category: catalog
+  graphql: [search, products, predictiveSearch]
+  rest: []
+  binding: graphql
+  confidence: high
+  note: >-
+    Free-text and filtered product search. QueryRoot.search and QueryRoot.products are the
+    backing fields; predictiveSearch covers the typeahead variant. The tool's
+    pagination.cursor maps to the Relay after/endCursor pair.
+- tool: get_product
+  servers: [kite-hill-ucp-mcp]
+  category: catalog
+  graphql: [product, productByHandle]
+  rest: ['GET /products/{handle}.json']
+  binding: graphql
+  confidence: high
+  note: One product with variants, pricing and availability, addressed by gid or handle.
+- tool: get_product_details
+  servers: [kite-hill-storefront-mcp]
+  category: catalog
+  graphql: [product, productByHandle]
+  rest: ['GET /products/{handle}.json']
+  binding: graphql
+  confidence: high
+  note: >-
+    The Storefront MCP twin of get_product; its options parameter resolves a specific
+    variant, which in GraphQL is variantBySelectedOptions on the Product type.
+- tool: lookup_catalog
+  servers: [kite-hill-ucp-mcp]
+  category: catalog
+  graphql: [nodes, node, products]
+  rest: []
+  binding: graphql
+  confidence: medium
+  note: >-
+    Batch identifier resolution. QueryRoot.nodes(ids:[ID!]!) is the closest GraphQL
+    equivalent; the tool additionally groups variants under their parent product, which the
+    raw field does not do.
+- tool: create_cart
+  servers: [kite-hill-ucp-mcp]
+  category: cart
+  graphql: [cartCreate]
+  rest: []
+  binding: graphql
+  confidence: high
+- tool: get_cart
+  servers: [kite-hill-ucp-mcp, kite-hill-storefront-mcp]
+  category: cart
+  graphql: [cart]
+  rest: []
+  binding: graphql
+  confidence: high
+- tool: update_cart
+  servers: [kite-hill-ucp-mcp, kite-hill-storefront-mcp]
+  category: cart
+  graphql: [cartLinesAdd, cartLinesUpdate, cartLinesRemove, cartBuyerIdentityUpdate,
+    cartDeliveryAddressesAdd, cartDeliveryAddressesReplace, cartSelectedDeliveryOptionsUpdate,
+    cartDiscountCodesUpdate, cartGiftCardCodesAdd, cartNoteUpdate]
+  rest: []
+  binding: graphql
+  confidence: high
+  note: >-
+    One consolidated tool collapses ten separate GraphQL mutations. The Storefront MCP
+    variant names them explicitly as parameters (add_items, update_items, remove_line_ids,
+    buyer_identity, delivery_addresses_to_add, delivery_addresses_to_replace,
+    selected_delivery_options, discount_codes, gift_card_codes, note), which is the clearest
+    evidence of the mapping.
+- tool: cancel_cart
+  servers: [kite-hill-ucp-mcp]
+  category: cart
+  graphql: [cartRemovePersonalData]
+  rest: []
+  binding: none
+  confidence: low
+  note: >-
+    No GraphQL cartDelete/cartCancel mutation exists in the SDL. cartRemovePersonalData is
+    the nearest field and is NOT the same operation. Recorded as unbound rather than forced.
+- tool: create_checkout
+  servers: [kite-hill-ucp-mcp]
+  category: checkout
+  graphql: [cartCreate, cartPrepareForCompletion]
+  rest: []
+  binding: partial
+  confidence: medium
+  note: >-
+    The anonymous Storefront GraphQL has no Checkout type — Shopify removed the checkout
+    mutations in favour of the Cart API. UCP's checkout object is a distinct resource
+    (gid://shopify/Checkout/...) with no exposed GraphQL equivalent on this endpoint.
+- tool: get_checkout
+  servers: [kite-hill-ucp-mcp]
+  category: checkout
+  graphql: []
+  rest: []
+  binding: none
+  confidence: high
+- tool: update_checkout
+  servers: [kite-hill-ucp-mcp]
+  category: checkout
+  graphql: []
+  rest: []
+  binding: none
+  confidence: high
+- tool: complete_checkout
+  servers: [kite-hill-ucp-mcp]
+  category: checkout
+  graphql: [cartSubmitForCompletion, cartCompletionAttempt]
+  rest: []
+  binding: partial
+  confidence: medium
+  note: >-
+    cartSubmitForCompletion + the cartCompletionAttempt query are the GraphQL analogue of
+    submit-and-poll. UCP folds them into one call and requires meta["idempotency-key"],
+    which the GraphQL pair does not offer (only shopPayPaymentRequestSessionSubmit takes an
+    idempotencyKey).
+- tool: cancel_checkout
+  servers: [kite-hill-ucp-mcp]
+  category: checkout
+  graphql: []
+  rest: []
+  binding: none
+  confidence: high
+  note: The reversal path for create_checkout; it has no GraphQL equivalent on this endpoint.
+- tool: get_order
+  servers: [kite-hill-ucp-mcp]
+  category: order
+  graphql: []
+  rest: []
+  binding: none
+  confidence: high
+  note: >-
+    Order reads on the Storefront GraphQL API require a customerAccessToken; the UCP tool
+    reads an order created by the same agent flow without one.
+- tool: search_shop_policies_and_faqs
+  servers: [kite-hill-storefront-mcp]
+  category: policy
+  graphql: [shop, pages, page, metaobjects]
+  rest: []
+  binding: partial
+  confidence: medium
+  note: >-
+    Backed by policy and page content the schema exposes as Shop.privacyPolicy /
+    Shop.refundPolicy / Shop.shippingPolicy / Shop.termsOfService and QueryRoot.pages, but
+    the tool answers in natural language over an index, not by field selection.
+mcp_only:
+- tool: get_checkout
+  reason: UCP Checkout resource has no anonymous GraphQL projection on this endpoint.
+- tool: update_checkout
+  reason: Same as get_checkout.
+- tool: cancel_checkout
+  reason: Same as get_checkout — and it is the only published reversal path for a checkout.
+- tool: get_order
+  reason: >-
+    Storefront GraphQL order access is customer-token gated; the UCP server exposes an order
+    read to the agent that placed it.
+- tool: search_shop_policies_and_faqs
+  reason: >-
+    Retrieval-augmented answering over store policies and FAQs. No GraphQL field returns a
+    natural-language answer.
+graphql_only:
+- fields: [article, articles, blog, blogByHandle, blogs]
+  reason: >-
+    The editorial surface — Kite Hill's recipe blog at /blogs/recipes. No MCP tool reaches
+    it, so an agent cannot retrieve a recipe through the tool surface.
+- fields: [menu, urlRedirects, sitemap, shop, localization, paymentSettings, publicApiVersions]
+  reason: >-
+    Navigation, store configuration and the live API-version support matrix.
+    publicApiVersions is what lifecycle/kite-hill-lifecycle.yml is built from.
+- fields: [collection, collectionByHandle, collections, productTags, productTypes, productRecommendations, locations]
+  reason: >-
+    Collection browsing, taxonomy and recommendations. The tools only search and look up
+    products, so an agent cannot enumerate Kite Hill's yogurt / cream cheese / dips
+    collections through MCP.
+- fields: [metaobject, metaobjects, page, pageByHandle, pages]
+  reason: Structured custom content and marketing pages.
+- fields: [customer, customerCreate, customerAccessTokenCreate, customerUpdate, customerAddressCreate, customerRecover, customerReset]
+  reason: >-
+    Customer identity and account management. Requires a customerAccessToken; no MCP tool
+    exposes it.
+- fields: [cartClone, cartMetafieldsSet, cartMetafieldDelete, cartAttributesUpdate, cartBillingAddressUpdate, cartPaymentUpdate]
+  reason: Cart duplication, custom cart metadata and direct payment attachment — no tool equivalent.
+- fields: [shopPayPaymentRequestSessionCreate, shopPayPaymentRequestSessionSubmit]
+  reason: >-
+    The Shop Pay payment-request flow, and the only GraphQL surface that takes an
+    idempotencyKey (with an IDEMPOTENCY_KEY_ALREADY_USED error code).
+rest_only: []
+coverage:
+  surfaces_present: [graphql, mcp-storefront, mcp-ucp]
+  openapi_present: false
+  tools_named: 18
+  distinct_tool_names: 16
+  tools_bound_to_graphql: 11
+  tools_unbound: 5
+  mcp_only: 5
+  graphql_query_fields: 34
+  graphql_mutation_fields: 41
+x-evidence:
+  graphql_introspection:
+    url: https://kite-hill.com/api/2026-04/graphql.json
+    http_status: 200
+    fetched: '2026-08-23'
+  ucp_mcp_tools_list:
+    url: https://kite-hill.com/api/ucp/mcp
+    http_status: 200
+    fetched: '2026-08-23'
+  storefront_mcp_tools_list:
+    url: https://kite-hill.com/api/mcp
+    http_status: 200
+    fetched: '2026-08-23'

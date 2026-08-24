@@ -1,0 +1,141 @@
+generated: '2026-08-23'
+method: probed
+source: >-
+  well-known/kite-hill-ucp.json + well-known/kite-hill-openid-configuration.json +
+  mcp/kite-hill-ucp-mcp-tools.json + graphql/kite-hill-storefront.graphql
+description: >-
+  Cross-cutting and domain standards Kite Hill's own surfaces DECLARE, each with the exact
+  document and field the claim was read from. Kite Hill makes no compliance claims of its
+  own; everything below is asserted by the machine-readable documents it serves.
+standards:
+- id: ucp
+  name: Universal Commerce Protocol
+  conforms: true
+  domain_standard: true
+  version: '2026-04-08'
+  also_supported: ['2026-01-23']
+  evidence: >-
+    https://kite-hill.com/.well-known/ucp declares ucp.version 2026-04-08, the
+    dev.ucp.shopping service with transport "mcp", and the capabilities
+    dev.ucp.shopping.checkout, .cart, .fulfillment, .discount, .order, .catalog.search and
+    .catalog.lookup, plus the dev.shopify.catalog extension. Each capability names its own
+    ucp.dev schema URL.
+  spec: https://ucp.dev/2026-04-08/specification/overview/
+  file: well-known/kite-hill-ucp.json
+  note: >-
+    This is the domain-standard signature for agentic retail commerce, read from the contract
+    rather than from a marketing claim. An agent that already speaks UCP transacts with this
+    store with no bespoke connector.
+- id: mcp
+  name: Model Context Protocol
+  conforms: true
+  version: '2024-11-05'
+  evidence: >-
+    POST initialize on https://kite-hill.com/api/ucp/mcp returned protocolVersion 2024-11-05
+    with serverInfo {name: universal-commerce, version: 0.1.0} and capabilities for tools,
+    prompts, resources and logging. tools/list answered anonymously on BOTH /api/ucp/mcp (13
+    tools) and /api/mcp (5 tools), each tool carrying a JSON Schema inputSchema.
+  file: mcp/kite-hill-mcp.yml
+- id: json-schema
+  name: JSON Schema 2020-12
+  conforms: true
+  evidence: >-
+    Every MCP tool inputSchema declares
+    $schema: https://json-schema.org/draft/2020-12/schema.
+  file: mcp/kite-hill-ucp-mcp-tools.json
+- id: jsonrpc
+  name: JSON-RPC 2.0
+  conforms: true
+  evidence: >-
+    Both MCP endpoints answer with jsonrpc "2.0" envelopes; errors carry code/message/data
+    (observed -32001 with data.code invalid_profile_url).
+- id: graphql
+  name: GraphQL (June 2018 spec, Relay connection conventions)
+  conforms: true
+  evidence: >-
+    Anonymous full introspection returned a 416-type schema with 28 Relay *Connection types
+    using edges/node/cursor and pageInfo{hasNextPage,hasPreviousPage,startCursor,endCursor}.
+  file: graphql/kite-hill-storefront.graphql
+- id: oidc
+  name: OpenID Connect Discovery 1.0
+  conforms: true
+  evidence: >-
+    https://kite-hill.com/.well-known/openid-configuration returns issuer, authorization,
+    token, end_session and jwks endpoints, response_types_supported [code],
+    id_token_signing_alg_values_supported [RS256] and claims_supported.
+  file: well-known/kite-hill-openid-configuration.json
+- id: oauth2
+  name: OAuth 2.0 Authorization Server Metadata (RFC 8414)
+  conforms: true
+  evidence: >-
+    https://kite-hill.com/.well-known/oauth-authorization-server returns a byte-identical
+    metadata document at the RFC 8414 path.
+  file: well-known/kite-hill-oauth-authorization-server.json
+- id: pkce
+  name: PKCE (RFC 7636)
+  conforms: true
+  evidence: code_challenge_methods_supported ["S256"] in the discovery document.
+- id: llmstxt
+  name: llms.txt
+  conforms: true
+  evidence: >-
+    https://kite-hill.com/llms.txt returns real agent instructions (not a docs index), and
+    /sitemap_agentic_discovery.xml submits the canonical /agents.md for crawling.
+  file: llms/kite-hill-llms.txt
+- id: rfc9309
+  name: Robots Exclusion Protocol (RFC 9309)
+  conforms: true
+  evidence: >-
+    /robots.txt is served with a customised, agent-aware policy — it names /agents.md, the
+    UCP discovery document and the MCP endpoint, and disallows /cart.js and
+    /recommendations/products so agents use the protocol surfaces instead.
+  file: well-known/kite-hill-robots.txt
+- id: rfc9457
+  name: RFC 9457 Problem Details
+  conforms: false
+  evidence: >-
+    No application/problem+json anywhere. GraphQL answers 200 with errors[]; the UCP MCP
+    answers 422 with a JSON-RPC error object.
+- id: idempotency
+  name: Idempotent write semantics
+  conforms: partial
+  evidence: >-
+    meta["idempotency-key"] is REQUIRED on complete_checkout and on no other UCP tool; the
+    GraphQL API exposes idempotencyKey only on shopPayPaymentRequestSessionSubmit, with an
+    IDEMPOTENCY_KEY_ALREADY_USED error code.
+  detail: conventions/kite-hill-conventions.yml
+- id: rfc8594
+  name: Sunset / Deprecation headers (RFC 8594)
+  conforms: false
+  evidence: No Sunset or Deprecation headers observed on any response.
+- id: securitytxt
+  name: security.txt (RFC 9116)
+  conforms: false
+  evidence: /.well-known/security.txt returns 404.
+- id: a2a
+  name: A2A Agent Card
+  conforms: false
+  evidence: >-
+    /.well-known/agent-card.json and /.well-known/agent.json both return 404. Kite Hill's
+    agent surface is MCP/UCP, not A2A.
+certifications:
+  published: none
+  note: >-
+    Kite Hill publishes no trust center, SOC 2/ISO 27001 attestation or security program page.
+    probe-security-programs.py returned vdp=none trust=none on 2026-08-23. Food-safety and
+    dietary claims made on the storefront (Whole30 approved, gluten free except pastas,
+    non-GMO almonds) are product claims, not API compliance claims, and are recorded here only
+    to say they were NOT counted as such.
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/.well-known/ucp
+  http_status: 200
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/.well-known/openid-configuration
+  http_status: 200
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  http_status: 200
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/.well-known/security.txt
+  http_status: 404

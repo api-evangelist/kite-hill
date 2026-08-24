@@ -1,18 +1,104 @@
 aid: kite-hill
 name: Kite Hill
-description: 'Kite Hill is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  Kite Hill is an American plant-based food company founded in 2010 by chef Tal Ronnen,
+  cheesemaker Monte Casino and Stanford biochemist Pat Brown, headquartered in Hayward,
+  California, making almond-milk yogurts, Greek-style yogurts, cream cheese and sour cream
+  alternatives, ricotta, dips and filled pastas sold at Whole Foods, Target, Sprouts, Publix
+  and other grocers, and direct to consumers at kite-hill.com. Kite Hill runs no developer
+  program and publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial
+  machine-readable surface from its own domain: an anonymously introspectable Storefront
+  GraphQL API, TWO live Model Context Protocol servers whose tools/list both answer
+  anonymously, a Universal Commerce Protocol merchant profile at /.well-known/ucp, OpenID
+  Connect and RFC 8414 discovery for customer accounts, and a provider-authored /agents.md
+  and /llms.txt that tell AI agents which surface to use and that no agent may finalize
+  payment without contemporaneous human approval.
 url: https://raw.githubusercontent.com/api-evangelist/kite-hill/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
-specificationVersion: '0.20'
+x-tier: profiled
+x-tier-reason: enrichment-pipeline
+image: https://kite-hill.com/cdn/shop/files/OG_Image_2400x1260.png?v=1734547205
+specificationVersion: '0.23'
 created: '2026-08-23'
 modified: '2026-08-23'
 tags:
 - Company
-apis: []
+- Consumer Packaged Goods
+- Plant Based Foods
+- Dairy Alternatives
+- Food and Beverage
+- E-Commerce
+- Direct to Consumer
+- Retail
+- Agentic Commerce
+- Shopify
+- GraphQL
+- MCP
+- Universal Commerce Protocol
+apis:
+- aid: kite-hill:storefront-graphql
+  name: Kite Hill Storefront GraphQL API
+  description: >-
+    The Shopify Storefront GraphQL API as served from Kite Hill's own domain. Introspection
+    is anonymous — the full schema (416 types, 34 query fields, 41 mutations, 28 Relay
+    connections) was retrieved without a Storefront access token on 2026-08-23. Covers the
+    product catalog, collections, cart and checkout preparation, editorial content, store
+    policies and customer accounts.
+  humanURL: https://shopify.dev/docs/api/storefront
+  baseURL: https://kite-hill.com/api/2026-04/graphql.json
+  tags:
+  - GraphQL
+  - E-Commerce
+  - Catalog
+  - Cart
+  properties:
+  - type: GraphQL
+    url: graphql/kite-hill-storefront.graphql
+  - type: GraphQLManifest
+    url: graphql/kite-hill-graphql.yml
+  - type: DataModel
+    url: data-model/kite-hill-data-model.yml
+- aid: kite-hill:storefront-mcp
+  name: Kite Hill Storefront MCP Server
+  description: >-
+    A live Model Context Protocol server on Kite Hill's storefront host. An anonymous
+    JSON-RPC tools/list returned five tools with full JSON Schema input contracts —
+    search_catalog, get_product_details, get_cart, update_cart and
+    search_shop_policies_and_faqs.
+  humanURL: https://kite-hill.com/agents.md
+  baseURL: https://kite-hill.com/api/mcp
+  tags:
+  - MCP
+  - Agents
+  - E-Commerce
+  properties:
+  - type: MCPServer
+    url: mcp/kite-hill-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/kite-hill-tool-crosswalk.yml
+- aid: kite-hill:ucp-commerce
+  name: Kite Hill UCP Agentic Commerce API
+  description: >-
+    Kite Hill implements the Universal Commerce Protocol for agent-driven commerce. The
+    merchant profile at /.well-known/ucp declares UCP 2026-04-08 and 2026-01-23, the
+    dev.ucp.shopping MCP service endpoint, the cart / checkout / fulfillment / discount /
+    order / catalog capabilities and two payment handlers (Google Pay and Shopify card).
+    This endpoint's tools/list answers ANONYMOUSLY — thirteen tools with full JSON Schema
+    input contracts, spanning the whole cart-to-completed-order lifecycle. Checkout
+    completion still requires contemporaneous buyer approval.
+  humanURL: https://ucp.dev/2026-04-08/specification/overview/
+  baseURL: https://kite-hill.com/api/ucp/mcp
+  tags:
+  - UCP
+  - Agentic Commerce
+  - MCP
+  - Checkout
+  properties:
+  - type: MCPServer
+    url: mcp/kite-hill-mcp.yml
+  - type: AgenticAccess
+    url: agentic-access/kite-hill-agentic-access.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +106,96 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
+  url: https://kite-hill.com/
+- type: Documentation
+  url: https://kite-hill.com/agents.md
+- type: LLMsTxt
+  url: llms/kite-hill-llms.txt
+- type: WellKnown
+  url: well-known/kite-hill-well-known.yml
+- type: MCPServer
+  url: mcp/kite-hill-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/kite-hill-tool-crosswalk.yml
+- type: AgenticAccess
+  url: agentic-access/kite-hill-agentic-access.yml
+- type: GraphQL
+  url: graphql/kite-hill-storefront.graphql
+- type: DataModel
+  url: data-model/kite-hill-data-model.yml
+- type: Authentication
+  url: authentication/kite-hill-authentication.yml
+- type: OAuthScopes
+  url: scopes/kite-hill-scopes.yml
+- type: Conventions
+  url: conventions/kite-hill-conventions.yml
+- type: Idempotency
+  url: conventions/kite-hill-conventions.yml
+- type: ErrorCatalog
+  url: errors/kite-hill-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/kite-hill-lifecycle.yml
+- type: Conformance
+  url: conformance/kite-hill-conformance.yml
+- type: RateLimits
+  url: rate-limits/kite-hill-rate-limits.yml
+- type: Plans
+  url: plans/kite-hill-plans-pricing.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: DomainSecurity
+  url: security/kite-hill-domain-security.yml
+- type: FAQ
+  url: https://kite-hill.com/pages/faq
+- type: Blog
+  url: https://kite-hill.com/blogs/recipes
+- type: About
+  url: https://kite-hill.com/pages/about-us
+- type: ContactUs
+  url: https://kite-hill.com/pages/contact
+- type: Support
+  url: https://kite-hill.com/pages/contact
+- type: StoreLocator
+  url: https://kite-hill.com/pages/store-locator
+- type: Press
+  url: https://kite-hill.com/pages/press-awards
+- type: SignUp
+  url: https://kite-hill.com/account/register
+- type: Login
+  url: https://kite-hill.com/account/login
+- type: PrivacyPolicy
+  url: https://kite-hill.com/policies/privacy-policy
+- type: SecondaryMarket
   url: https://forgeglobal.com/kite-hill_stock/
+x-enrichment:
+  date: '2026-08-23'
+  status: enriched
+  artifacts_added: 30
+  pass: local-v1
+x-coverage:
+  state: covered
+  reason: null
+  detail: >-
+    Contract discovery succeeded. Kite Hill runs no developer program and publishes no
+    OpenAPI, but four machine-readable surfaces answered anonymously from its own domain —
+    Storefront GraphQL introspection, an MCP server at /api/mcp whose tools/call also
+    answered without a credential, a UCP commerce MCP server at /api/ucp/mcp whose
+    tools/list returned all thirteen tools including complete_checkout, and a UCP merchant
+    profile plus OIDC/RFC 8414 discovery at /.well-known/. Every product in that catalog is
+    published at $0.00.
+  evidence:
+  - url: https://kite-hill.com/api/2026-04/graphql.json
+    status: 200
+  - url: https://kite-hill.com/api/ucp/mcp
+    status: 200
+  - url: https://kite-hill.com/api/mcp
+    status: 200
+  - url: https://kite-hill.com/.well-known/ucp
+    status: 200
+  - url: https://kite-hill.com/llms.txt
+    status: 200
+  - url: https://kite-hill.com/openapi.json
+    status: 404
+  - url: https://kite-hill.com/.well-known/agent-card.json
+    status: 404
+  checked: '2026-08-23'

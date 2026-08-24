@@ -1,0 +1,248 @@
+generated: '2026-08-23'
+method: probed
+status: published
+source: https://kite-hill.com/api/ucp/mcp
+description: >-
+  Kite Hill serves TWO live MCP endpoints from its own storefront host, and BOTH answer an
+  anonymous JSON-RPC tools/list with HTTP 200 and full JSON Schema input contracts. The
+  Shopify Storefront MCP server at /api/mcp returned five read/cart tools. The Universal
+  Commerce Protocol MCP server at /api/ucp/mcp returned thirteen tools covering the entire
+  catalog to cart to checkout to completed-order lifecycle, including complete_checkout.
+  resources/list and prompts/list are gated behind a resolvable UCP agent profile URI. Both
+  servers are Shopify platform surfaces, but they are served from kite-hill.com, carry Kite
+  Hill's own catalog and are advertised by Kite Hill's own /robots.txt, /llms.txt and
+  /agents.md.
+servers:
+- name: kite-hill-ucp-mcp
+  transport: http
+  url: https://kite-hill.com/api/ucp/mcp
+  canonical_url: https://kite-hill-store.myshopify.com/api/ucp/mcp
+  protocol: MCP (JSON-RPC 2.0) over the Universal Commerce Protocol
+  protocol_version: '2024-11-05'
+  server_info:
+    name: universal-commerce
+    version: 0.1.0
+  spec: https://ucp.dev/2026-04-08/specification/overview/
+  schema: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+  auth: >-
+    none observed for tools/list — an anonymous POST returned 200 with all thirteen tools.
+    resources/list and prompts/list return HTTP 422 with JSON-RPC error -32001 "UCP discovery
+    failed" / invalid_profile_url ("Missing profile uri"), so those two methods require a
+    resolvable UCP agent profile. Tool INVOCATION also requires meta["ucp-agent"].profile,
+    a required property on every one of the thirteen tools, and complete_checkout
+    additionally requires meta["idempotency-key"].
+  capabilities:
+    tools:
+      listChanged: true
+    prompts:
+      listChanged: true
+    resources:
+      listChanged: true
+    logging: {}
+  tools_list:
+    verified: '2026-08-23'
+    http_status: 200
+    gated: false
+    tool_count: 13
+    file: kite-hill-ucp-mcp-tools.json
+  vendor: Shopify UCP commerce server
+- name: kite-hill-storefront-mcp
+  transport: http
+  url: https://kite-hill.com/api/mcp
+  protocol: MCP (JSON-RPC 2.0)
+  auth: none observed (anonymous tools/list returned 200)
+  tools_list:
+    verified: '2026-08-23'
+    http_status: 200
+    gated: false
+    tool_count: 5
+    file: kite-hill-storefront-mcp-tools.json
+  vendor: Shopify Storefront MCP
+  note: >-
+    search_catalog on this server documents that its response conforms to the UCP catalog
+    search capability (dev.ucp.shopping.catalog.search) — the two servers are overlapping
+    projections of one commerce core, not independent APIs.
+tools:
+- name: search_catalog
+  server: kite-hill-ucp-mcp
+  category: catalog
+  description: >-
+    Search for products from the online store using natural language queries, specific filter
+    criteria, or both; at least one of query or filters must be provided. Results are
+    paginated — use pagination.cursor to fetch further pages.
+  input_properties: [meta, catalog]
+  required: [meta, catalog]
+- name: lookup_catalog
+  server: kite-hill-ucp-mcp
+  category: catalog
+  description: Look up multiple products or variants by identifier in one request.
+  input_properties: [meta, catalog]
+  required: [meta, catalog]
+- name: get_product
+  server: kite-hill-ucp-mcp
+  category: catalog
+  description: >-
+    Retrieve complete product detail by identifier — a singular product with variants,
+    pricing and availability.
+  input_properties: [meta, catalog]
+  required: [meta, catalog]
+- name: create_cart
+  server: kite-hill-ucp-mcp
+  category: cart
+  description: Creates a new cart.
+  input_properties: [meta, cart]
+  required: [meta, cart]
+- name: get_cart
+  server: kite-hill-ucp-mcp
+  category: cart
+  description: Get the cart contents.
+  input_properties: [meta, id]
+  required: [meta, id]
+- name: update_cart
+  server: kite-hill-ucp-mcp
+  category: cart
+  description: Perform updates to a cart.
+  input_properties: [meta, cart, id]
+  required: [meta, cart, id]
+- name: cancel_cart
+  server: kite-hill-ucp-mcp
+  category: cart
+  reversal_of: create_cart
+  description: Cancels a cart.
+  input_properties: [meta, id]
+  required: [meta, id]
+- name: create_checkout
+  server: kite-hill-ucp-mcp
+  category: checkout
+  description: >-
+    Creates a checkout. Returns checkout details including line items, totals, and any
+    applicable discounts or taxes. The checkout object accepts payment.instruments with a
+    billing_address and an opaque credential token (card or wallet).
+  input_properties: [meta, checkout]
+  required: [meta, checkout]
+- name: get_checkout
+  server: kite-hill-ucp-mcp
+  category: checkout
+  description: >-
+    Returns details about the checkout, including line items, totals, discounts and taxes.
+    The id is a Shopify global id of the form gid://shopify/Checkout/abc123.
+  input_properties: [meta, id]
+  required: [meta, id]
+- name: update_checkout
+  server: kite-hill-ucp-mcp
+  category: checkout
+  description: Updates a checkout and returns the recalculated checkout details.
+  input_properties: [meta, checkout, id]
+  required: [meta, checkout, id]
+- name: complete_checkout
+  server: kite-hill-ucp-mcp
+  category: checkout
+  consequence: irreversible-purchase
+  description: >-
+    Completes a checkout and returns the checkout result — order ID, Thank You Page URL, or
+    any errors encountered. This is the money-moving tool.
+  input_properties: [meta, checkout, id]
+  required: [meta, id, checkout]
+  idempotency: >-
+    REQUIRED. meta["idempotency-key"] is a required property on this tool and on no other —
+    "An idempotency key for completing the checkout."
+  human_approval_required: >-
+    Yes. Kite Hill's own /robots.txt states "Checkouts are for humans" and forbids any agent
+    flow that finalizes payment without an explicit, contemporaneous human approval step.
+    See agentic-access/kite-hill-agentic-access.yml.
+- name: cancel_checkout
+  server: kite-hill-ucp-mcp
+  category: checkout
+  reversal_of: create_checkout
+  description: Cancels a checkout.
+  input_properties: [meta, id]
+  required: [meta, id]
+- name: get_order
+  server: kite-hill-ucp-mcp
+  category: order
+  description: Get the details of an order.
+  input_properties: [meta, id]
+  required: [meta, id]
+- name: search_catalog
+  server: kite-hill-storefront-mcp
+  category: catalog
+  description: >-
+    Search for products from the online store using natural language queries, filters, or
+    both. Paginated; response conforms to dev.ucp.shopping.catalog.search.
+  input_properties: [meta, catalog]
+  required: []
+- name: get_product_details
+  server: kite-hill-storefront-mcp
+  category: catalog
+  description: >-
+    Look up a product by ID. Pass options to select a specific variant for the product card;
+    without options the first available variant is returned.
+  input_properties: [product_id, options, country, language]
+  required: [product_id]
+- name: get_cart
+  server: kite-hill-storefront-mcp
+  category: cart
+  description: >-
+    Get the cart including items, shipping options, discount info and checkout url for a
+    given cart id.
+  input_properties: [cart_id]
+  required: [cart_id]
+- name: update_cart
+  server: kite-hill-storefront-mcp
+  category: cart
+  description: >-
+    Consolidated cart mutation — add/remove/update line items, buyer identity, delivery
+    addresses, selected delivery options, discount codes, gift cards and notes in one call.
+  input_properties: [cart_id, add_items, update_items, remove_line_ids, buyer_identity,
+    delivery_addresses_to_add, delivery_addresses_to_replace, selected_delivery_options,
+    discount_codes, gift_card_codes, note]
+  required: []
+- name: search_shop_policies_and_faqs
+  server: kite-hill-storefront-mcp
+  category: policy
+  description: Get facts about the store's policies, products or services.
+  input_properties: [query, context]
+  required: [query]
+discovery:
+  llms_txt: https://kite-hill.com/llms.txt
+  agents_md: https://kite-hill.com/agents.md
+  ucp_profile: https://kite-hill.com/.well-known/ucp
+  robots_txt: https://kite-hill.com/robots.txt
+  agentic_sitemap: https://kite-hill.com/sitemap_agentic_discovery.xml
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  method: POST tools/list
+  http_status: 200
+  content_type: application/json
+  result: 13 tools with inputSchema
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  method: POST initialize
+  http_status: 200
+  result: protocolVersion 2024-11-05; serverInfo universal-commerce 0.1.0
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  method: POST resources/list
+  http_status: 422
+  result: JSON-RPC error -32001 UCP discovery failed (invalid_profile_url)
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  method: POST prompts/list
+  http_status: 422
+  result: JSON-RPC error -32001 UCP discovery failed (invalid_profile_url)
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/mcp
+  method: POST tools/list
+  http_status: 200
+  content_type: application/json
+  result: 5 tools with inputSchema
+deployment:
+  mode: remote
+  endpoint: https://kite-hill.com/api/ucp/mcp
+  auth: none
+  verified: probed
+  probe: live
+  tools: 13
+  checked: '2026-08-23'
+  source: anonymous JSON-RPC tools/list from this enrichment run

@@ -1,0 +1,91 @@
+generated: '2026-08-23'
+method: derived
+source: >-
+  graphql/kite-hill-storefront.graphql + observed JSON-RPC error responses from
+  https://kite-hill.com/api/ucp/mcp + observed GraphQL error responses
+description: >-
+  Kite Hill publishes no error reference of its own and no OpenAPI, so there are no RFC 9457
+  problem+json types to derive. This catalog records the error envelopes the surfaces
+  ACTUALLY return, captured from the introspected SDL and from errors observed during this
+  enrichment run.
+format: not-rfc9457
+envelopes:
+- surface: graphql
+  endpoint: https://kite-hill.com/api/2026-04/graphql.json
+  transport_status: >-
+    200 for request-level errors — the HTTP status does not carry the failure. Errors arrive
+    in a top-level errors[] array alongside a null data field.
+  fields: [message, locations, path, extensions.code, extensions.documentation, extensions.requiredAccess]
+  mutation_errors: >-
+    Mutations return typed *UserError lists implementing the DisplayableError interface
+    (field, message, code) inside the payload rather than in errors[]. The SDL declares
+    CartUserError, CustomerUserError, MetafieldDeleteUserError and friends with their own
+    code enums.
+- surface: mcp
+  endpoints: [https://kite-hill.com/api/ucp/mcp, https://kite-hill.com/api/mcp]
+  transport: JSON-RPC 2.0
+  fields: [error.code, error.message, error.data.code, error.data.content, error.data.continue_url]
+observed:
+- surface: mcp
+  endpoint: https://kite-hill.com/api/ucp/mcp
+  method: resources/list
+  http_status: 422
+  code: -32001
+  message: UCP discovery failed
+  data_code: invalid_profile_url
+  detail: 'Unable to fetch agent profile: Missing profile uri'
+  remediation: >-
+    Supply a resolvable UCP agent profile URI. Every tool takes it as
+    meta["ucp-agent"]["profile"]; resources/list and prompts/list require it before they will
+    answer at all.
+  fetched: '2026-08-23'
+- surface: mcp
+  endpoint: https://kite-hill.com/api/ucp/mcp
+  method: prompts/list
+  http_status: 422
+  code: -32001
+  message: UCP discovery failed
+  data_code: invalid_profile_url
+  fetched: '2026-08-23'
+- surface: graphql
+  endpoint: https://kite-hill.com/api/2026-04/graphql.json
+  http_status: 200
+  code: ACCESS_DENIED
+  message: 'Access denied for productTags field. Required access: `unauthenticated_read_product_tags` access scope.'
+  documentation: https://shopify.dev/api/usage/access-scopes
+  remediation: >-
+    The anonymous storefront token this endpoint issues does not carry every unauthenticated
+    read scope. productTags and productTypes are denied; product, products, collections,
+    pages, search and the cart mutations are not.
+  fetched: '2026-08-23'
+schema_declared_codes:
+  source: graphql/kite-hill-storefront.graphql
+  note: >-
+    Error code enums declared in the SDL and therefore reachable on this endpoint. Listed as
+    evidence of the typed-error surface, not as an exhaustive catalog.
+  examples:
+  - IDEMPOTENCY_KEY_ALREADY_USED
+  - INVALID
+  - INVALID_DELIVERY_GROUP
+  - INVALID_DELIVERY_OPTION
+  - INVALID_MERCHANDISE_LINE
+  - MISSING_DISCOUNT_CODE
+  - MISSING_NOTE
+  - PAYMENT_METHOD_NOT_SUPPORTED
+  - VALIDATION_CUSTOM
+gaps:
+- >-
+  No published error reference page. /agents.md and /llms.txt document the happy path and the
+  429 back-off rule but no error taxonomy.
+- >-
+  No RFC 9457 application/problem+json anywhere; neither surface uses HTTP status codes as
+  the primary failure channel (GraphQL answers 200; the UCP MCP answers 422 with a JSON-RPC
+  error body).
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/ucp/mcp
+  http_status: 422
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/2026-04/graphql.json
+  http_status: 200
+  note: ACCESS_DENIED on productTags

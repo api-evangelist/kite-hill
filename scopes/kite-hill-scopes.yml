@@ -1,0 +1,56 @@
+generated: '2026-08-23'
+method: probed
+source: https://kite-hill.com/.well-known/openid-configuration
+docs: https://shopify.dev/docs/api/customer
+description: >-
+  Kite Hill has no OpenAPI to derive scopes from. These are the scopes the authorization
+  server behind Kite Hill's customer accounts actually advertises in its OIDC / RFC 8414
+  discovery document (scopes_supported), fetched anonymously on 2026-08-23.
+schemes:
+- name: shopify-customer-accounts
+  source: well-known/kite-hill-openid-configuration.json
+  issuer: https://shopify.com/authentication/68089118898
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://shopify.com/authentication/68089118898/oauth/authorize
+    tokenUrl: https://shopify.com/authentication/68089118898/oauth/token
+    pkce: S256
+scopes:
+- scope: openid
+  description: Standard OpenID Connect scope — issues an ID token identifying the shopper.
+  flows: [authorizationCode]
+  sources: [well-known/kite-hill-openid-configuration.json]
+- scope: email
+  description: Releases the email and email_verified claims for the authenticated shopper.
+  flows: [authorizationCode]
+  sources: [well-known/kite-hill-openid-configuration.json]
+- scope: customer-account-api:full
+  description: >-
+    Full access to the Shopify Customer Account API on behalf of the signed-in shopper —
+    orders, addresses and profile for that customer. This is the scope that governs the order
+    history the anonymous Storefront GraphQL schema deliberately does not expose.
+  flows: [authorizationCode]
+  sources: [well-known/kite-hill-openid-configuration.json]
+- scope: customer-account-mcp-api:full
+  description: >-
+    Full access to the Customer Account MCP API — the authenticated, per-shopper MCP surface,
+    distinct from the two anonymous MCP servers at /api/mcp and /api/ucp/mcp.
+  flows: [authorizationCode]
+  sources: [well-known/kite-hill-openid-configuration.json]
+notes:
+- >-
+  These scopes govern the SHOPPER-delegated surface only. The anonymous storefront GraphQL
+  server and BOTH MCP servers require no scope at all — see
+  authentication/kite-hill-authentication.yml.
+- >-
+  The UCP MCP server's access control is not scope-based: it requires a resolvable agent
+  profile URI in meta["ucp-agent"].profile, which is an identity assertion rather than a
+  delegated permission.
+- >-
+  Kite Hill publishes no scope reference page of its own; the governing documentation is
+  Shopify's customer-accounts documentation.
+x-evidence:
+  fetched: '2026-08-23'
+  url: https://kite-hill.com/.well-known/openid-configuration
+  http_status: 200
+  field: scopes_supported

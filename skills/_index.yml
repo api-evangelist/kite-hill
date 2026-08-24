@@ -1,0 +1,27 @@
+generated: '2026-08-23'
+method: generated
+source: >-
+  mcp/kite-hill-mcp.yml + graphql/kite-hill-storefront.graphql + llms/kite-hill-agents.md
+note: >-
+  Kite Hill publishes no OpenAPI, so every operation named in these skills was grounded in
+  either a live MCP tools/list response (both servers, 2026-08-23) or a field grepped out of
+  the introspected GraphQL SDL. No operation names are invented. Kite Hill publishes no
+  skills of its own; its /agents.md is captured verbatim at llms/kite-hill-agents.md and its
+  rules are carried into each skill.
+skills:
+- file: kite-hill-find-product.md
+  name: Find and compare Kite Hill products
+  api: mcp/kite-hill-mcp.yml
+  operations: [search_catalog, lookup_catalog, get_product, get_product_details, search, products, predictiveSearch, product, productByHandle]
+- file: kite-hill-build-cart.md
+  name: Build a Kite Hill cart
+  api: mcp/kite-hill-mcp.yml
+  operations: [create_cart, get_cart, update_cart, cancel_cart, cartCreate, cartLinesAdd, cartLinesUpdate, cartLinesRemove, cartBuyerIdentityUpdate, cartDeliveryAddressesAdd, cartSelectedDeliveryOptionsUpdate, cartDiscountCodesUpdate, cartNoteUpdate]
+- file: kite-hill-complete-checkout.md
+  name: Hand off a Kite Hill checkout to a human
+  api: mcp/kite-hill-mcp.yml
+  operations: [create_checkout, get_checkout, update_checkout, complete_checkout, cancel_checkout, get_order, cartPrepareForCompletion, cartSubmitForCompletion, cartCompletionAttempt]
+- file: kite-hill-answer-store-and-policy.md
+  name: Answer a Kite Hill policy, product or "where to buy" question
+  api: mcp/kite-hill-mcp.yml
+  operations: [search_shop_policies_and_faqs, shop, page, pageByHandle, pages, article, articles, blog, blogByHandle]

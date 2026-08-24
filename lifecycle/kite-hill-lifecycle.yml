@@ -1,0 +1,83 @@
+generated: '2026-08-23'
+method: probed
+source: 'https://kite-hill.com/api/2026-04/graphql.json (query publicApiVersions)'
+description: >-
+  Kite Hill itself publishes no API versioning, deprecation or SLA policy, and runs no status
+  page. The versioning contract that actually governs the surfaces served from kite-hill.com
+  is Shopify's, and it is machine-readable: the publicApiVersions query on Kite Hill's own
+  endpoint returns the live support matrix, captured verbatim below on 2026-08-23.
+versioning:
+  scheme: calendar-quarter path segment
+  pattern: https://kite-hill.com/api/{YYYY-MM}/graphql.json
+  current: '2026-07'
+  probed_at: '2026-08-23'
+  probe: '{publicApiVersions{handle displayName supported}}'
+  versions:
+  - handle: '2025-10'
+    display_name: '2025-10'
+    supported: true
+  - handle: '2026-01'
+    display_name: '2026-01'
+    supported: true
+  - handle: '2026-04'
+    display_name: '2026-04'
+    supported: true
+  - handle: '2026-07'
+    display_name: '2026-07 (Latest)'
+    supported: true
+  - handle: '2026-10'
+    display_name: '2026-10 (Release candidate)'
+    supported: false
+  - handle: unstable
+    display_name: unstable
+    supported: false
+  note: >-
+    Older versions still answer: 2025-07 and 2025-01 both returned 200 to a live query on
+    2026-08-23 even though publicApiVersions no longer lists them as supported.
+  policy_docs: https://shopify.dev/docs/api/usage/versioning
+  platform_inherited: true
+ucp_versioning:
+  scheme: dated protocol versions
+  supported: ['2026-04-08', '2026-01-23']
+  latest_stable: '2026-04-08'
+  source: https://kite-hill.com/.well-known/ucp
+  discovery: >-
+    Both versions are individually addressable — /.well-known/ucp/2026-04-08 and
+    /.well-known/ucp/2026-01-23 each returned 200.
+mcp_protocol_version:
+  reported: '2024-11-05'
+  source: 'POST initialize on https://kite-hill.com/api/ucp/mcp'
+  server_info: {name: universal-commerce, version: 0.1.0}
+deprecation:
+  policy_published: false
+  provider_policy: none
+  in_schema:
+    deprecated_fields: 53
+    mechanism: '@deprecated(reason: ...) directives in the introspected SDL'
+    note: >-
+      Deprecation is signalled in the contract itself rather than in a policy document. No
+      Sunset or Deprecation HTTP headers (RFC 8594) were observed on any response.
+status_page:
+  provider_status_page: none
+  note: >-
+    Kite Hill runs no status page. The underlying platform publishes one at
+    https://www.shopifystatus.com, which is Shopify's, not Kite Hill's — recorded here for
+    an operator's benefit but NOT wired as a StatusPage pointer, because the provider does
+    not publish it.
+sla:
+  published: false
+support:
+  channels:
+  - https://kite-hill.com/pages/contact
+  - contactus@kite-hill.com
+  note: >-
+    General inquiries contactus@, sales@ and media@kite-hill.com are published on the contact
+    page. There is no developer or API support channel.
+x-evidence:
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/api/2026-04/graphql.json
+  http_status: 200
+  note: publicApiVersions
+- fetched: '2026-08-23'
+  url: https://kite-hill.com/.well-known/ucp/2026-04-08
+  http_status: 200
