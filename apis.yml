@@ -18,6 +18,17 @@ x-type: company
 x-source: harvest:secondary-market
 x-tier: profiled
 x-tier-reason: enrichment-pipeline
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://kite-hill.com/cdn/shop/files/OG_Image_2400x1260.png?v=1734547205
 specificationVersion: '0.23'
 created: '2026-08-23'
