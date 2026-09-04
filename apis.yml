@@ -29,6 +29,21 @@ deliveryModel:
   - pricing
   generated: '2026-08-28'
   method: derived
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  - scopes
+  - rate-limits
+  - security
+  generated: '2026-09-02'
+  method: derived
 image: https://kite-hill.com/cdn/shop/files/OG_Image_2400x1260.png?v=1734547205
 specificationVersion: '0.23'
 created: '2026-08-23'
