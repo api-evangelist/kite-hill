@@ -116,6 +116,11 @@ apis:
   humanURL: https://ucp.dev/2026-04-08/specification/overview/
   baseURL: https://kite-hill.com/api/ucp/mcp
   tags:
+  - Universal Commerce Protocol
+  - Agentic Commerce
+  - MCP
+  - Checkout
+  tags_raw:
   - UCP
   - Agentic Commerce
   - MCP
