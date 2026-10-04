@@ -85,6 +85,9 @@ apis:
     url: graphql/kite-hill-graphql.yml
   - type: DataModel
     url: data-model/kite-hill-data-model.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-graphql
 - aid: kite-hill:storefront-mcp
   name: Kite Hill Storefront MCP Server
   description: >-
@@ -103,6 +106,9 @@ apis:
     url: mcp/kite-hill-mcp.yml
   - type: ToolCrosswalk
     url: mcp/kite-hill-tool-crosswalk.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-mcp
 - aid: kite-hill:ucp-commerce
   name: Kite Hill UCP Agentic Commerce API
   description: >-
@@ -130,6 +136,9 @@ apis:
     url: mcp/kite-hill-mcp.yml
   - type: AgenticAccess
     url: agentic-access/kite-hill-agentic-access.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: ucp
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
