@@ -1,0 +1,16 @@
+generated: '2026-10-12'
+method: none
+source:
+- https://zapier.com/apps/kite-hill/integrations
+- https://n8n.io/integrations/kite-hill/
+- https://composio.dev/toolkits/kite-hill
+- https://monid.ai/tools/kite-hill
+checked:
+- https://composio.dev/toolkits/kite-hill
+- https://monid.ai/tools/kite-hill
+- https://n8n.io/integrations/kite-hill/
+- https://zapier.com/apps/kite-hill/integrations
+summary: null
+marketplace_apps: []
+edges: []
+templates: []
