@@ -64,5 +64,121 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Kite Hill is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://forgeglobal.com/kite-hill_stock/
+Kite Hill is an American plant-based food company founded in 2010 by chef Tal Ronnen, cheesemaker Monte Casino and Stanford biochemist Pat Brown, headquartered in Hayward, California, making almond-milk yogurts, Greek-style yogurts, cream cheese and sour cream alternatives, ricotta, dips and filled pastas sold at Whole Foods, Target, Sprouts, Publix and other grocers, and direct to consumers at kite-hill.com. Kite Hill runs no developer program and publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial machine-readable surface from its own domain: an anonymously introspectable Storefront GraphQL API, TWO live Model Context Protocol servers whose tools/list both answer anonymously, a Universal Commerce Protocol merchant profile at /.well-known/ucp, OpenID Connect and RFC 8414 discovery for customer accounts, and a provider-authored /agents.md and /llms.txt that tell AI agents which surface to use and that no agent may finalize payment without contemporaneous human approval.
+
+**Areas:** Company · Consumer Packaged Goods · Plant Based Foods · Dairy Alternatives · Food and Beverage · E-Commerce · Direct to Consumer · Retail · Agentic Commerce · Shopify · GraphQL · MCP
+
+## Kite Hill on APIs.io
+
+Everything profiled for Kite Hill is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/kite-hill/](https://apis.io/providers/kite-hill/)** — or go straight to one of the APIs or properties below.
+
+### APIs (3)
+
+- [Kite Hill Storefront GraphQL API](https://apis.io/apis/kite-hill/storefront-graphql/) — The Shopify Storefront GraphQL API as served from Kite Hill's own domain. Introspection is anonymous — the full schema (416 types, 34 query fields, 41…
+- [Kite Hill Storefront MCP Server](https://apis.io/apis/kite-hill/storefront-mcp/) — A live Model Context Protocol server on Kite Hill's storefront host. An anonymous JSON-RPC tools/list returned five tools with full JSON Schema input…
+- [Kite Hill UCP Agentic Commerce API](https://apis.io/apis/kite-hill/ucp-commerce/) — Kite Hill implements the Universal Commerce Protocol for agent-driven commerce. The merchant profile at /.well-known/ucp declares UCP 2026-04-08 and…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [kite-hill-mcp.yml](https://apis.io/servers/kite-hill/kite-hill-mcp-yml/)
+
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [Kite Hill Agentic Access](https://apis.io/agentic-access/kite-hill/kite-hill-agentic-access/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Kite Hill Authentication](https://apis.io/security/kite-hill/kite-hill-authentication/)
+- [Kite Hill Domain Security](https://apis.io/security/kite-hill/kite-hill-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Kite Hill Scopes](https://apis.io/scopes/kite-hill/kite-hill-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Kite Hill Plans Pricing](https://apis.io/plans/kite-hill/kite-hill-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Kite Hill Rate Limits](https://apis.io/rate-limits/kite-hill/kite-hill-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://kite-hill.com/)
+- [Documentation](https://kite-hill.com/agents.md)
+- [Sign up](https://kite-hill.com/account/register)
+- [Support](https://kite-hill.com/pages/contact)
+- [Blog](https://kite-hill.com/blogs/recipes)
+- [Privacy policy](https://kite-hill.com/policies/privacy-policy)
+
+## API Evangelist rating
+
+**Kin Score 28.4** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 80.8 |
+| Contract quality | 9.3 |
+| Contract governance | 18.2 |
+| Operational transparency | 21.1 |
+| Developer ergonomics | 30.4 |
+| Access clarity | 23.7 |
+
+**Agent readiness 38.9** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | yes |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | derived (partial credit) |
+| Error Semantics | derived (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | platform (partial credit) |
+
+**Regulatory alignment 30.4** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/kite-hill/](https://apis.io/providers/kite-hill/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Kite Hill: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/kite-hill/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
